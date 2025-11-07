@@ -7,7 +7,7 @@ pipeline {
                 // from the configured repository and branch.
                 // This stage is implicitly handled but good to visualize.
                 echo 'Cloning the repository...'
-                git branch: 'dev', url: 'YOUR_GITHUB_REPOSITORY_URL'
+               // git branch: 'dev', url: 'YOUR_GITHUB_REPOSITORY_URL'
             }
         }
         stage('Build') {
