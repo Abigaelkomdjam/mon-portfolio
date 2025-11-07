@@ -6,7 +6,7 @@ pipeline {
                 // Jenkins automatically clones the code when the pipeline starts
                 // from the configured repository and branch.
                 // This stage is implicitly handled but good to visualize.
-                echo 'Cloning the repository...'
+                echo 'Cloning the repository....'
                // git branch: 'dev', url: 'YOUR_GITHUB_REPOSITORY_URL'
             }
         }
