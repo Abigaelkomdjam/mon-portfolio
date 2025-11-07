@@ -23,7 +23,7 @@ pipeline {
             steps {
                 // The commands here depend on your deployment target.
                 // You might copy files to a server or push a Docker image.
-                echo 'Deploying the application...'
+                echo 'Deploying the application....'
                 // Add your deployment commands here
             }
         }
