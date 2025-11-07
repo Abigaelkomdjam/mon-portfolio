@@ -5,27 +5,58 @@ pipeline {
             steps {
                 // Jenkins automatically clones the code when the pipeline starts
                 // from the configured repository and branch.
-                // This stage is implicitly handled but good to visualize.
-                echo 'Cloning the repository....'
-               // git branch: 'dev', url: 'YOUR_GITHUB_REPOSITORY_URL'
+                slackSend(channel: '#jenkins_notification', color: 'good', message: "Cloning repository...")
+                git branch: 'dev', url: 'https://github.com/Abigaelkomdjam/mon-portfolio.git'
             }
         }
         stage('Build') {
             steps {
-                // The commands here depend on your project.
-                // For a Java project, you might run: sh 'mvn clean install'
-                // For a Node.js project, you might run: sh 'npm install'
-                echo 'Building the application...'
-                // Add your build commands here
+                script {
+
+                    slackSend(channel: '#jenkins_notification', color: 'good', message: "Building the application...")
+
+                    // The 'sh' step runs a shell command. This command builds the Docker image.
+                    // The '.' refers to the current directory (the root of your cloned repo),
+                    // where your Dockerfile should be.
+                    sh "docker build -t ${IMAGE_NAME}:${IMAGE_TAG} ."
+                }
             }
         }
-        stage('Deploy') {
+        stage('Deploy - Run docker container') {
             steps {
-                // The commands here depend on your deployment target.
-                // You might copy files to a server or push a Docker image.
-                echo 'Deploying the application....'
-                // Add your deployment commands here
+                script {
+                    slackSend(channel: '#jenkins_notification', color: 'good', message: "Cleaning up old container...")
+                    
+                    sh "docker stop ${IMAGE_NAME} || true"
+                    
+                    sh "docker rm ${IMAGE_NAME} || true"
+
+                    slackSend(channel: '#jenkins_notification', color: 'good', message: "Running Docker container from image: ${IMAGE_NAME}")
+
+                    // This command will run the container.
+                    // -d runs the container in detached mode (in the background).
+                    // -p 1212:80 maps port 1212 on your host to port 80 in the container.
+                    //    (Adjust the ports according to your application's needs).
+                    // --name gives the container a unique name to avoid conflicts.
+                    sh "docker run -d -p 1212:80 --name ${IMAGE_NAME} ${IMAGE_NAME}:${IMAGE_TAG}"
+                }
             }
+        }
+    }
+
+    post {
+        // The 'always' block runs after all stages, regardless of success or failure.
+        // It's a good practice to clean up containers to avoid leaving old ones running.
+        always {
+            script {
+                slackSend(channel: '#jenkins_notification', color: 'good', message: "Post-build steps complete.")
+            }
+        }
+        success {
+           slackSend(channel: '#jenkins_notification', color: 'good', message: "Deployment Successful: ${IMAGE_NAME} - Build ${IMAGE_NAME}")
+        }
+        failure {
+            slackSend(channel: '#jenkins_notification', color: 'danger', message: "Deployment Failed: ${IMAGE_NAME} - Build ${IMAGE_NAME}")
         }
     }
 }
